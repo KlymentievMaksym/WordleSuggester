@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools >= 77.0.3", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wordle-suggester"
+dynamic = ["version"]
+requires-python = ">= 3.12"
+authors = [
+  {name = "Klymentiev Maksym", email = "dadmon1901@gmail.com"},
+]
+description = "Suggests next possible word used in Wordle, basing on your previous one and result from it."
+readme = "README.md"
+license = "MIT"
+dependencies = [
+    "numpy",
+    "pandas",
+    "py-cord",
+    "python-dotenv"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-benchmark",
+    "pytest-cov",
+]
+
+[project.urls]
+Repository = "https://github.com/KlymentievMaksym/WordleSuggester.git"
+Issues = "https://github.com/KlymentievMaksym/WordleSuggester/issues"
+
+# [project.scripts]
+# train = "colorization_engine.scripts.train:train"
+# evaluate = "colorization_engine.scripts.evaluate:evaluate"
+# inference = "colorization_engine.scripts.inference:inference"
+# inspect_ckpt = "colorization_engine.scripts.inspect_ckpt:inspect_ckpt"
+# optimize_ckpt = "colorization_engine.scripts.optimize_ckpt:optimize_ckpt"
+
+# [project.entry-points."spam.magical"]
+# tomatoes = "spam:main_tomatoes"
+
+[tool.setuptools_scm]
+root = "."
+fallback_version = "1.0.0"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
