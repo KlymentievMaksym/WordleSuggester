@@ -2,6 +2,8 @@ from pathlib import Path
 
 import discord
 import discord.ext.commands as cmnd
+
+import numpy as np
 import pandas as pd
 
 from wordle_suggester.utils.entropy import calculate_best_word, create_colors_from_str, color_word_using_colors
@@ -10,7 +12,8 @@ class Wordle(cmnd.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
         self.available_words = pd.read_csv(Path(__file__).parent.parent / "data" / "filtered-wordle-words.csv", header=None)
-        self.available_words_list = self.available_words[0].apply(lambda x: x.lower()).tolist()
+        # self.available_words_list = self.available_words[0].apply(lambda x: x.lower()).tolist()
+        self.available_words_numpy = np.array(self.available_words[0].apply(lambda word: list(ord(letter) - 97 for letter in word.lower())).tolist(), dtype=np.int8)
 
     @discord.slash_command(name="suggest", description="Suggest next possible n words")
     async def suggest(
@@ -23,7 +26,7 @@ class Wordle(cmnd.Cog):
     ):
         try:
             word = word.lower()
-            best_words, best_entropies = calculate_best_word(word, colors, self.available_words_list, best_n)
+            best_words, best_entropies = calculate_best_word(word, colors, self.available_words_numpy, best_n)
             # text_to_respond = f"Best **{min(best_n, len(best_words))}** recommended words: **{' | '.join([word.upper() for word in best_words]) if best_words else 'There is no recommended word available'}**"
 
             colors_tuple = create_colors_from_str(colors)
