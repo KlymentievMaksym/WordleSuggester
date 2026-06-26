@@ -2,7 +2,7 @@ import numpy as np
 import numpy.typing as npt
 from collections import defaultdict, Counter
 
-alternatives = {"g": 2, "green": 2, "2": 2, "yellow": 1, "y": 1, "1": 1, "gray": 0, "d": 0, " ": 0, "0": 0}
+alternatives = {"g": 2, "green": 2, "2": 2, "yellow": 1, "y": 1, "1": 1, "gray": 0, "d": 0, "0": 0}
 accessable = [0, 1, 2]
 
 def filter_words(word_numpy: npt.NDArray[np.int8], colors: tuple[int, ...], available_words_numpy: npt.NDArray[np.int8]) -> npt.NDArray[np.int8]:
@@ -80,10 +80,11 @@ def calculate_entropy(guess_numpy: npt.NDArray[np.int8], available_words_numpy: 
     return entropy
 
 def create_colors_from_str(colors: str) -> tuple[int, ...]:
-    if len(colors.split(",")) == 1:
+    colors = colors.strip()
+    if len(colors.split(";")) == 1:
         colors_list = list(color.lower() for color in colors)
     else:
-        colors_list = list(color.strip().lower() for color in colors.split(","))
+        colors_list = list(color.strip().lower() for color in colors.split(";"))
 
     if len(colors_list) != 5:
         raise ValueError(f"Expected colors length 5, received {len(colors_list)} ({colors_list})")
@@ -102,7 +103,7 @@ def create_colors_from_str(colors: str) -> tuple[int, ...]:
     return tuple(colors_result)
 
 def create_word_from_str(word: str) -> npt.NDArray[np.int8]:
-    if not word.isalpha() and not word.isascii():
+    if not word.isalpha() or not word.isascii():
         raise ValueError(f"Please use English letters only, received {word}")
     if len(word) != 5:
         raise ValueError(f"Expected word length 5, received {len(word)}")
@@ -120,12 +121,20 @@ def color_word_using_colors(word: str, colors: tuple[int, ...]):
         color_word += formater[colors[color_index]] + word[color_index] + formater["reset"]
     return color_word
 
-def calculate_best_word(word: str, colors: str, available_words_numpy: npt.NDArray[np.int8], best_n: int = 1) -> tuple[list[str], list[float]]:
+# def calculate_best_word(word: str, colors: str, available_words_numpy: npt.NDArray[np.int8], best_n: int = 1) -> tuple[list[str], list[float]]:
+def calculate_best_word(words_input: str, colors_input: str, available_words_numpy: npt.NDArray[np.int8], best_n: int = 1) -> tuple[list[str], list[float]]:
+    
+    words_list = words_input.replace(",", " ").split()
+    colors_list_str = colors_input.replace(",", " ").split()
 
-    word_numpy = create_word_from_str(word)
-    colors_list = create_colors_from_str(colors)
+    if len(words_list) != len(colors_list_str):
+        raise ValueError(f"Number of words does not match number of color patterns, received ({len(words_list)}) and ({len(colors_list_str)})")
 
-    available_words = filter_words(word_numpy, colors_list, available_words_numpy)
+    available_words = available_words_numpy
+    for word, colors in zip(words_list, colors_list_str):
+        word_numpy = create_word_from_str(word)
+        colors_list = create_colors_from_str(colors)
+        available_words = filter_words(word_numpy, colors_list, available_words)
 
     guesses_entropy = defaultdict(float)
     for guess in available_words:
