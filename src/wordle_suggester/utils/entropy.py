@@ -116,10 +116,14 @@ def color_word_using_colors(word: str, colors: tuple[int, ...]):
         0: "\033[2;30m",
         "reset": "\033[0m"
     }
-    color_word = formater["reset"]
-    for color_index in range(len(colors)):
-        color_word += formater[colors[color_index]] + word[color_index] + formater["reset"]
+    color_word = formater["reset"] + "".join([formater[colors[color_index]] + word[color_index] + formater["reset"] for color_index in range(len(colors))])
+    # for color_index in range(len(colors)):
+    #     color_word += formater[colors[color_index]] + word[color_index] + formater["reset"]
     return color_word
+
+def format_with_emojis(colors: tuple[int, ...]) -> str:
+    formater = {2: "🟩", 1: "🟨", 0: "⬛"}
+    return "".join(formater[color] for color in colors)
 
 # def calculate_best_word(word: str, colors: str, available_words_numpy: npt.NDArray[np.int8], best_n: int = 1) -> tuple[list[str], list[float]]:
 def calculate_best_word(words_input: str, colors_input: str, available_words_numpy: npt.NDArray[np.int8], best_n: int = 1) -> tuple[list[str], list[float]]:
