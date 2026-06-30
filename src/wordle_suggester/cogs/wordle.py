@@ -1,4 +1,6 @@
 from pathlib import Path
+import logging
+logger = logging.getLogger(__name__)
 
 import discord
 import discord.ext.commands as cmnd
@@ -7,15 +9,18 @@ import numpy as np
 import pandas as pd
 
 from wordle_suggester.utils.entropy import calculate_best_word, create_colors_from_str, format_with_emojis, color_word_using_colors
+from wordle_suggester.utils.logger import log_command
 
 class Wordle(cmnd.Cog):
     def __init__(self, bot: discord.Bot):
+        logger.info(f"Started")
         self.bot = bot
         available_words = pd.read_csv(Path(__file__).parent.parent / "data" / "filtered-wordle-words.csv", header=None)
         # self.available_words_list = self.available_words[0].apply(lambda x: x.lower()).tolist()
         self.available_words_numpy = np.array(available_words[0].apply(lambda word: list(ord(letter) - 97 for letter in word.lower())).tolist(), dtype=np.int8)
 
     @discord.slash_command(name="suggest", description="Suggest next possible n words")
+    @log_command(logger=logger)
     async def suggest(
         self,
         ctx: discord.ApplicationContext,
@@ -25,6 +30,7 @@ class Wordle(cmnd.Cog):
         private: bool = discord.Option(bool, description="Enter True or False to choose whether share message with others or not share", default=True) # type: ignore
     ):
         try:
+            logger.info(f"Received command")
             await ctx.defer(ephemeral=private)
             embed = discord.Embed(
                 title="Wordle Suggestions",
@@ -76,8 +82,12 @@ class Wordle(cmnd.Cog):
             await ctx.respond(embed=embed, ephemeral=private)
         except ValueError as e:
             await ctx.respond(e, ephemeral=True)
+            logger.error(e)
         except discord.HTTPException as e:
-            await ctx.respond("Text is too large! Try lowering the `best_n`", ephemeral=True)
+            text_to_respond = "Text is too large! Try lowering the `best_n`"
+            await ctx.respond(text_to_respond, ephemeral=True)
+            logger.error(text_to_respond)
+
 
 
 def setup(bot: discord.Bot):
