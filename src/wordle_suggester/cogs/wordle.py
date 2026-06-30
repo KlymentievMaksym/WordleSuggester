@@ -25,6 +25,7 @@ class Wordle(cmnd.Cog):
         private: bool = discord.Option(bool, description="Enter True or False to choose whether share message with others or not share", default=True) # type: ignore
     ):
         try:
+            await ctx.defer(ephemeral=private)
             embed = discord.Embed(
                 title="Wordle Suggestions",
                 description="Suggests Wordle words based on received words and their color results",
